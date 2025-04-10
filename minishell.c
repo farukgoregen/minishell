@@ -32,7 +32,7 @@ void	ft_error(t_input *input)
 {
 	if (input->error==2)
 		printf("minishell: open quotes \"\'");
-	else if (input->error == 4)
+	else if (input->error == 3)
 		printf("minishell: syntax error near unexpected token `newline'\n");
 	free(input->input);
 	free(input);
