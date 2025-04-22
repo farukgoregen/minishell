@@ -1,6 +1,7 @@
 #include "minishell.h"
 #include <readline/history.h>
 #include <readline/readline.h>
+#include "libft/libft.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,9 +14,9 @@ void	empty_line(t_input *a)
 	{
 		if (a->input[i] != ' ')
 			a->isprint++;
-		else if (a->input[i] == '$')
+		if (a->input[i] == '$')
 			a->dollar++;
-		else if (a->input[i] == '|' || a->input[i] == '<' || a->input[i] == '>')
+		if (a->input[i] == '|' || a->input[i] == '<' || a->input[i] == '>')
 			a->operator++;
 		i++;
 	}
@@ -52,7 +53,7 @@ int	op_checker(t_input *input, int i)
 	}
 	if (input->after_str == 0)
 		input->error = 3;
-	return (j + 1);
+	return (j);// burdaki +1'i sildin
 }
 void	opCounter(t_input *input)
 {
@@ -73,7 +74,10 @@ void	opCounter(t_input *input)
 		}
 		else if (input->input[i] == '|' || input->input[i] == '<'
 			|| input->input[i] == '>')
-			i = op_checker(input, i);
+			{
+				//printf("1-%s\n",input->input+i);
+				i = op_checker(input, i);
+			}
 		else if (input->input[i] != ' ')
 			input->isalpha++;
 		if (input->error > 0)
@@ -107,4 +111,6 @@ void	ft_parser(t_input *input)
 		dollar_parse(input);
 	if (input->operator> 0)
 		opCounter(input);
+
+	arg_parse(input,ft_strlen(input->input),0);
 }
