@@ -45,6 +45,8 @@ char	*strcut(char *str, int start, int end, int size)
 	int		j;
 	char	*newstr;
 
+	if (size<0)
+		return NULL;
 	newstr = malloc(size + 1);
 	i = -1;
 	j = 0;
@@ -94,7 +96,7 @@ char	*redirect_convert(t_input *ipt, char *str, int k)
 		i = quadot_skip(ipt->input, i);
 		if (str[i]== '<' && ipt->input[i + 1] == '<')
 		{
-			str = redirect_skip(&ipt->arg[k]->heradock, str, i);
+			str = redirect_skip(&ipt->arg[k]->heradock, str, i+1);
 			i = -1;
 		}
 		else if (str[i]== '<')
@@ -104,7 +106,7 @@ char	*redirect_convert(t_input *ipt, char *str, int k)
 		}
 		else if (str[i]== '>' && ipt->input[i + 1] == '>')
 		{
-			str = redirect_skip(&ipt->arg[k]->append_outfile, str, i);
+			str = redirect_skip(&ipt->arg[k]->append_outfile, str, i+1);
 			i = -1;
 		}
 		else if (str[i]== '>')
@@ -112,6 +114,8 @@ char	*redirect_convert(t_input *ipt, char *str, int k)
 			str = redirect_skip(&ipt->arg[k]->outfile, str, i);
 			i = -1;
 		}
+		if (!str)
+			return NULL;
 	}
 	return str;
 }
