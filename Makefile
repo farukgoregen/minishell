@@ -8,7 +8,7 @@ all: $(NAME)
 
 $(NAME): $(SRCS) 
 	make -C ./libft -s
-	cc  -o  $(NAME)  $(CFLAGS) $(SRCS) -lreadline -lncurses $(LIBFT)
+	gcc -g   -o  $(NAME)  $(CFLAGS) $(SRCS) -lreadline -lncurses $(LIBFT)
 
 clean:
 	make clean -C ./libft -s

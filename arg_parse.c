@@ -36,6 +36,8 @@ int	pipe_count(char *str) // bu fonksiyona gerek yok emptylineda yap
 		if (str[i] == '|')
 			count++;
 	}
+	if (count==0)
+		count=1;
 	return (count);
 }
 
@@ -45,6 +47,9 @@ char	*strcut(char *str, int start, int end, int size)
 	int		j;
 	char	*newstr;
 
+
+	if (size<=0)
+		return NULL;
 	newstr = malloc(size + 1);
 	i = -1;
 	j = 0;
@@ -62,56 +67,54 @@ char	*strcut(char *str, int start, int end, int size)
 	return (newstr);
 }
 
-char	*redirect_skip(char **redirect, char *str, int i)
+char	*redirect_skip(char **redirect, char *str, int *t)
 {
 	int	j;
 	int	k;
+	int i;
 
+	i=*t;
 	j = i;
 	i++;
+	if (str[i] == '<' || str[i] == '>')
+	i++;
+	
 	while (str[i] == ' ')
 		i++;
 	k = i;
-	while (str[i] != ' ')
+	while (str[i] != ' ' && str[i] != '\0' )
 	{
 		if (str[i] == 34 || str[i] == 39)
 			i = quadot_skip(str, i);
 		i++;
 	}
+	
 	*redirect = ft_substr(str, k, i - k);
+	
 	str = strcut(str, j, i, ft_strlen(str) - (i - j));
+	*t=-1;
 	return (str);
 }
 
 char	*redirect_convert(t_input *ipt, char *str, int k)
 {
 	int	i;
-
 	i = -1;
 	while (str[++i])
 	{
 		if (str[i]== 34 || str[i]== 39)
 		i = quadot_skip(ipt->input, i);
-		if (str[i]== '<' && ipt->input[i + 1] == '<')
-		{
-			str = redirect_skip(&ipt->arg[k]->heradock, str, i);
-			i = -1;
+		if (str[i]== '<' && ipt->input[i + 1] == '<'){
+			str = redirect_skip(&ipt->arg[k]->heradock, str, &i);
 		}
 		else if (str[i]== '<')
-		{
-			str = redirect_skip(&ipt->arg[k]->infile, str, i);
-			i = -1;
-		}
+			str = redirect_skip(&ipt->arg[k]->infile, str, &i);
 		else if (str[i]== '>' && ipt->input[i + 1] == '>')
-		{
-			str = redirect_skip(&ipt->arg[k]->append_outfile, str, i);
-			i = -1;
-		}
+			str = redirect_skip(&ipt->arg[k]->append_outfile, str, &i);
 		else if (str[i]== '>')
-		{
-			str = redirect_skip(&ipt->arg[k]->outfile, str, i);
-			i = -1;
-		}
+			str = redirect_skip(&ipt->arg[k]->outfile, str, &i);
+		if (!str)
+			return NULL;
 	}
 	return str;
 }
@@ -138,8 +141,10 @@ void	arg_parse(t_input *ipt, int len, int k)
 			fakestr = ft_substr(ipt->input, j, i - j);
 			ipt->arg[k] = malloc(sizeof(t_pro));
 			fakestr = redirect_convert(ipt, fakestr, k);
+				
 			k++;
-			printf("%s\n", fakestr);
+			if (fakestr)
+				printf("%s\n", fakestr);
 			free(fakestr);
 			j = i + 1;
 		}
