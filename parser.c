@@ -5,6 +5,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+<<<<<<< HEAD
+=======
+int	quotes_skip(char *str, int j)
+{
+	int		i;
+	char	qut;
+
+	i = j;
+	if (str[i] == 34 || str[i] == 39)
+	{
+		qut = str[i++];
+		while (str[i] && str[i] != qut)
+			i++;
+		if (str[i])
+			i++;
+	}
+	return (i);
+}
+
+>>>>>>> main
 void	empty_line(t_input *a)
 {
 	int	i;
@@ -12,12 +32,32 @@ void	empty_line(t_input *a)
 	i = 0;
 	while (a->input[i])
 	{
+<<<<<<< HEAD
+=======
+		if (a->input[i] == 34)
+		{
+			i++;
+			a->isprint++;
+			while (a->input[i] != 34)
+			{
+				if (a->input[i] == '$')
+					a->dollar++;
+				i++;
+			}
+		}
+		if (a->input[i] == 39)
+		{
+			i = quotes_skip(a->input, i);
+			a->isprint++;
+		}
+>>>>>>> main
 		if (a->input[i] != ' ')
 			a->isprint++;
 		if (a->input[i] == '$')
 			a->dollar++;
 		if (a->input[i] == '|' || a->input[i] == '<' || a->input[i] == '>')
 			a->operator++;
+<<<<<<< HEAD
 		i++;
 	}
 	if (a->isprint == 0)
@@ -25,6 +65,14 @@ void	empty_line(t_input *a)
 		a->error = 1;
 		return ;
 	}
+=======
+		if (a->input[i] == '|')
+			a->pipe++;
+		i++;
+	}
+	if (a->isprint == 0)
+		a->error = 1;
+>>>>>>> main
 }
 
 int	op_checker(t_input *input, int i)
@@ -85,6 +133,7 @@ void	opCounter(t_input *input)
 	}
 }
 
+<<<<<<< HEAD
 void	ft_arg_free(t_input *ipt)
 {
 	int	i;
@@ -103,6 +152,9 @@ void	ft_arg_free(t_input *ipt)
 		free(ipt->arg[i]);
 	free(ipt->arg);
 }
+=======
+
+>>>>>>> main
 
 void	ft_parser(t_input *input)
 {

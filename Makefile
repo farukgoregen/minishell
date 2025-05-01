@@ -1,7 +1,12 @@
 NAME=minishell
 
+<<<<<<< HEAD
 SRCS= minishell.c parser.c dollar_parse.c arg_parse.c
 CFLAGS=-Wall -Wextra -Werror
+=======
+SRCS= minishell.c parser.c dollar_parse.c arg_parse.c arg_parse2.c execute.c
+CFLAGS=-g
+>>>>>>> main
 LIBFT=libft/libft.a
 
 all: $(NAME)
