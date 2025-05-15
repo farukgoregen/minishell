@@ -1,3 +1,4 @@
+
 #include "libft/libft.h"
 #include "minishell.h"
 #include <readline/history.h>
@@ -7,11 +8,11 @@
 
 int	convert_input(t_input *input, char *veriable, int plen, int i)
 {
-	char	*newinput;
-	int		len;
-	int		vlen;
-	int		j;
-	int		k;
+	char *newinput;
+	int len;
+	int vlen;
+	int j;
+	int k;
 
 	j = -1;
 	k = i;
@@ -34,11 +35,17 @@ int	convert_input(t_input *input, char *veriable, int plen, int i)
 
 int	find_path(t_input *input, int i, int point)
 {
-	char	*path;
-	char	*veriable;
-	int		j;
+	char *path;
+	char *veriable;
+	int j;
 
 	j = i;
+	if (input->input[i + 1] == '?')
+	{
+		veriable = ft_itoa(input->exit_code);
+		i = convert_input(input, veriable, 1, i);
+		return (i + 1);
+	}
 	while ((ft_isalnum(input->input[j + 1]) || input->input[j + 1] == '_'))
 	{
 		if (point == 1)
@@ -49,7 +56,7 @@ int	find_path(t_input *input, int i, int point)
 		j++;
 	}
 	path = ft_substr(input->input, i + 1, j - i);
-	veriable = getenv(path);
+	veriable = ft_getenv(input->env, path);
 	i = convert_input(input, veriable, ft_strlen(path), i);
 	free(path);
 	return (i);
@@ -57,7 +64,7 @@ int	find_path(t_input *input, int i, int point)
 
 int	print_dollar(t_input *ipt, char point, int i)
 {
-	int	flag;
+	int flag;
 
 	flag = 0;
 	while (ipt->input[++i] != '"' && flag == 0)
@@ -70,12 +77,15 @@ int	print_dollar(t_input *ipt, char point, int i)
 				i = find_path(ipt, i, 1);
 			else if (ft_isalpha(ipt->input[i + 1]) || ipt->input[i + 1] == '_')
 				i = find_path(ipt, i, 0);
+			else if (ipt->input[i + 1] == '?')
+				i = find_path(ipt, i, 0);
 		}
 	}
 	if (point == '$')
 		return (i - 1);
 	return (i);
 }
+
 int	heredock_dollar(t_input *input, int i)
 {
 	i += 2;
@@ -96,12 +106,11 @@ int	heredock_dollar(t_input *input, int i)
 	i++;
 	return (i);
 }
+
 void	dollar_parse(t_input *input)
 {
-	int	i;
+	int i;
 
-	if (input->error > 0)
-		return ;
 	i = 0;
 	while (input->input[i])
 	{
