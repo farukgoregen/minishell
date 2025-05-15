@@ -2,12 +2,11 @@
 #include "minishell.h"
 #include <readline/history.h>
 #include <readline/readline.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 #define BUFFER_SIZE 1
-
 
 void	handle_sigint(int sig)
 {
@@ -115,7 +114,8 @@ void	read_line(t_input *input, char **env, int code)
 	add_history(input->input);
 }
 
-int	ft_executer(t_input *input)
+
+int ft_executer(t_input *input)
 {
 	// 	int	l;
 	// int k;
@@ -148,7 +148,7 @@ int	ft_executer(t_input *input)
 	// }
 	// else
 	// {
-
+		
 	// 	printf("oluşmadı\n");
 	// }
 	// printf("---\n");
@@ -161,18 +161,18 @@ int	ft_executer(t_input *input)
 	return (exit);
 }
 
-void	ft_error(t_input *input)
+int ft_error(t_input *input)
 {
 	if (input->error == 2)
-		write(2, "minishell: open quotes \"\'", 26);
+		write(2, "minishell: open quotes \"\'\n", 26);
 	else if (input->error == 3)
-		write(2, "minishell: syntax error near unexpected token `newline'\n",
-			57);
+		write(2, "minishell: syntax error near unexpected token `newline'\n", 57);
 	free(input->input);
 	free(input);
+	return (2);
 }
 
-int	main(int ac, char **av, char **env)
+int main(int ac, char **av, char **env)
 {
 	t_input *input;
 	int exit_code;
@@ -189,6 +189,6 @@ int	main(int ac, char **av, char **env)
 			exit_code = ft_executer(input);
 		}
 		else
-			ft_error(input);
+			exit_code=ft_error(input);
 	}
 }

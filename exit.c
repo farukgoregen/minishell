@@ -12,7 +12,7 @@ int ft_exit(char **args)
     int exit_status;
     int i;
 
-    printf("exit\n");
+    //printf("exit\n");
     if (!args || !args[0])
     {
         exit(0);
