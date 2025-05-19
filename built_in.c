@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 
-void	built_in3(char **args, t_input *pro)
+void	built_in3(char **args, t_shell *pro)
 {
 	if (ft_strncmp(args[0], "unset", 5) == 0)
 	{
@@ -28,11 +28,11 @@ void	built_in3(char **args, t_input *pro)
 	}
 }
 
-void	built_in(char **args, t_input *pro)
+void	built_in(char **args, t_shell *pro)
 {
 	if (ft_strncmp(args[0], "echo", 5) == 0)
 	{
-		ft_echo(&args[1], 0, 1);
+		ft_echo(&args[1]);
 		exit(0);
 	}
 	if (ft_strncmp(args[0], "env", 4) == 0)
@@ -52,7 +52,7 @@ void	built_in(char **args, t_input *pro)
 	}
 	built_in3(args, pro);
 }
-int built_in2_redirection2(int *original_stdout, int *original_stdin)
+void built_in2_redirection2(int *original_stdout, int *original_stdin)
 {
 	if (*original_stdout != -1)
     {
@@ -66,34 +66,38 @@ int built_in2_redirection2(int *original_stdout, int *original_stdin)
         close(*original_stdin);
     }
 }
-int built_in2_redirection(char **args, t_pro *arg, int *original_stdout, int *original_stdin)
-{	
+void built_in2_redirection(char **args, t_cmd *arg, int *original_stdout, int *original_stdin)
+{
+	int fd;
+
 	*original_stdin = -1;
 	*original_stdout = -1;
-
-    if (arg->infile || arg->outfile || arg->append_outfile)
-    {
-        if (arg->outfile || arg->append_outfile)
-            *original_stdout = dup(1);
-        
-        if (arg->infile)
-            *original_stdin = dup(0);
-        
-        handle_redirections(arg);
-    }
+	
+	if(ft_strncmp(args[0], "unset", 5) == 0 || ft_strncmp(args[0], "cd", 3) == 0 || ft_strncmp(args[0], "unset", 5) == 0 || ft_strncmp(args[0], "export", 7) == 0)
+	{
+		if (arg->heradock)
+			redirect_heredoc_write(&fd,arg->heradock,0);
+		if (arg->infile || arg->outfile || arg->append_outfile)
+    	{
+       	 	if (arg->outfile || arg->append_outfile)
+            	*original_stdout = dup(1);
+        	if (arg->infile)
+            	*original_stdin = dup(0);
+        	handle_redirections(arg);
+   		}
+	}
 }
-int built_in2(char **args, t_input *pro, t_pro *arg)
+int built_in2(char **args, t_shell *pro, t_cmd *arg)
 {
 	int result;
 	int original_stdout;
 	int original_stdin;
-
 	
 	built_in2_redirection(args, arg, &original_stdout, &original_stdin);
     if (ft_strncmp(args[0], "exit", 5) == 0)
         result = ft_exit(&args[1]);
     else if (ft_strncmp(args[0], "cd", 3) == 0)
-    {
+	{
         if (args[2])
         {
             ft_print_error(NULL, "minishell: cd: too many arguments", NULL, 1);

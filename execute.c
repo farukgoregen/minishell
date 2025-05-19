@@ -15,22 +15,22 @@ int	wait_child(pid_t pid)
 	int exit_code;
 
 	waitpid(pid, &status, 0);
+	wait(NULL);
 	if (WIFEXITED(status))
 	{
 		exit_code = WEXITSTATUS(status);
 		if (exit_code != 0)
 			return (exit_code);
 	}
+	return (0);
 }
-
-int ft_execve(t_input *pro, char **args)
+int ft_execve(t_shell *pro, char **args)
 {
     char *base;
     char *error_msg;
     
     if (!args || !args[0])
         exit(1);
-    
     built_in(args, pro);
     base = check_command_access(args[0], pro->env, &error_msg);
     if (!base)
@@ -43,26 +43,26 @@ int ft_execve(t_input *pro, char **args)
         else
             exit(1);
     }
-    
     execve(base, args, pro->env);
     free(base);
     ft_print_error("minishell:", ": Failed to execute command", args, 2);
     exit(0);
 }
 
-int	execute_last(t_input *pro, int s, int prev_fd)
+int	execute_last(t_shell *pro, int s, int prev_fd)
 {
 	pid_t pid;
 	int res;
 
+	res = 2;
 	if ((pro->pipe == 0) && pro->arg[s]->str && pro->arg[s]->str[0])
 		res = built_in2(pro->arg[s]->str, pro,pro->arg[s]);
-	if ((res == 1) || (res == 0))
+	if (res != 2)
 		return (res);
 	pid = fork();
 	if (pid == 0)
 	{
-		if (prev_fd != -1)
+		if ((heredoc_control(pro->arg[s]) == 0) && prev_fd != -1)
 		{
 			dup2(prev_fd, 0);
 			close(prev_fd);
@@ -75,15 +75,16 @@ int	execute_last(t_input *pro, int s, int prev_fd)
 	return (wait_child(pid));
 }
 
-void	execute_command(t_input *pro, int cmd_index, int *prev_fd)
+void	execute_command(t_shell *pro, int cmd_index, int *prev_fd)
 {
 	int fd[2];
 	pid_t pid;
+
 	pipe(fd);
 	pid = fork();
 	if (pid == 0)
 	{
-		if (*prev_fd != -1)
+		if ((heredoc_control(pro->arg[cmd_index]) == 0) && *prev_fd != -1)
 		{
 			dup2(*prev_fd, 0);
 			close(*prev_fd);
@@ -100,7 +101,7 @@ void	execute_command(t_input *pro, int cmd_index, int *prev_fd)
 	*prev_fd = fd[0];
 }
 
-int	execute_pipe(t_input *pro, int start_idx, int cmd_idx)
+int	execute_pipe(t_shell *pro, int start_idx)
 {
 	int prev_fd = -1;
 	int i = start_idx;
@@ -118,4 +119,5 @@ int	execute_pipe(t_input *pro, int start_idx, int cmd_idx)
 		return (execute_last(pro, i, prev_fd));
 	else if (prev_fd != -1)
 		close(prev_fd);
+	return (0);
 }

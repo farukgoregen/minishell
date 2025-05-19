@@ -2,19 +2,35 @@
 #include "minishell.h"
 #include <readline/history.h>
 #include <readline/readline.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <signal.h>
 #define BUFFER_SIZE 1
+
+
+int		g_signal_exit = 0;
 
 void	handle_sigint(int sig)
 {
-	write(STDOUT_FILENO, "\n", 1);
-	rl_on_new_line();
-	rl_replace_line("", 0);
-	rl_redisplay();
+	if (g_signal_exit == 1){
+		write(1, "\n", 1);
+		exit (0) ;
+	}
+	else if (g_signal_exit == 2)
+	{
+		write(1, "\n", 1);
+		return ;
+	}
+	else if (g_signal_exit == 0)
+	{
+		write(1, "\n", 1);
+		rl_on_new_line();
+		rl_replace_line("", 0);
+		rl_redisplay();
+	}
 }
+
 
 char	*ft_read(int fd, char *str)
 {
@@ -71,7 +87,7 @@ char	*get_next_line(int fd)
 	return (beforestr);
 }
 
-void	read_line(t_input *input, char **env, int code)
+void	read_line(t_shell *input, char **env, int code)
 {
 	input->input = NULL;
 	input->isprint = 0;
@@ -114,74 +130,39 @@ void	read_line(t_input *input, char **env, int code)
 	add_history(input->input);
 }
 
-
-int ft_executer(t_input *input)
+int	ft_executer(t_shell *input)
 {
-	// 	int	l;
-	// int k;
-	// k = 0;
-	// l = 0;
-	// while (input->arg[k])
-	// {
-	// 	if (input->arg[k]->str)
-	// 	{
-
-	// 		while (input->arg[k]->str[l])
-	// 		{
-	// 			printf("ipt->arg[%d]->str[%d] %s\n", k, l,
-	// 				input->arg[k]->str[l]);
-	// 			l++;
-	// 		}
-	// 		l=0;
-	// 	}
-	// 	if (input->arg[k]->infile)
-	// 		printf("ipt->arg[%d]->infile %s\n",k,input->arg[k]->infile);
-	// 	if (input->arg[k]->outfile)
-	// 		printf("ipt->arg[%d]->outfile %s\n",k,input->arg[k]->outfile);
-
-	// 	k++;
-	// }
-	// printf("---\n");
-	// if (input->arg[0])
-	// {
-	// 	printf("oluştu\n");
-	// }
-	// else
-	// {
-		
-	// 	printf("oluşmadı\n");
-	// }
-	// printf("---\n");
 	int exit;
 	free(input->input);
-	exit = execute_pipe(input, 0, 0);
+	exit = execute_pipe(input, 0);
 
 	ft_executer_free(input);
 	free(input);
 	return (exit);
 }
 
-int ft_error(t_input *input)
+void	ft_error(t_shell *input)
 {
 	if (input->error == 2)
-		write(2, "minishell: open quotes \"\'\n", 26);
+		write(2, "minishell: open quotes \"\'", 26);
 	else if (input->error == 3)
-		write(2, "minishell: syntax error near unexpected token `newline'\n", 57);
+		write(2, "minishell: syntax error near unexpected token `newline'\n",
+			57);
 	free(input->input);
 	free(input);
-	return (2);
+	exit(2);
 }
 
-int main(int ac, char **av, char **env)
+int	main(int ac, char **av, char **env)
 {
-	t_input *input;
+	t_shell *input;
 	int exit_code;
 
 	signal(SIGINT, handle_sigint);
 	exit_code = 0;
 	while (1)
 	{
-		input = malloc(sizeof(t_input));
+		input = malloc(sizeof(t_shell));
 		read_line(input, env, exit_code);
 		ft_parser(input);
 		if (input->error == 0)
@@ -189,6 +170,6 @@ int main(int ac, char **av, char **env)
 			exit_code = ft_executer(input);
 		}
 		else
-			exit_code=ft_error(input);
+			ft_error(input);
 	}
 }

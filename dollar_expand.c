@@ -6,7 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int	convert_input(t_input *input, char *veriable, int plen, int i)
+
+int	convert_shell(t_shell *input, char *veriable, int plen, int i)
 {
 	char *newinput;
 	int len;
@@ -33,7 +34,7 @@ int	convert_input(t_input *input, char *veriable, int plen, int i)
 	return (i - 1);
 }
 
-int	find_path(t_input *input, int i, int point)
+int	find_path(t_shell *input, int i, int point)
 {
 	char *path;
 	char *veriable;
@@ -43,7 +44,7 @@ int	find_path(t_input *input, int i, int point)
 	if (input->input[i + 1] == '?')
 	{
 		veriable = ft_itoa(input->exit_code);
-		i = convert_input(input, veriable, 1, i);
+		i = convert_shell(input, veriable, 1, i);
 		return (i + 1);
 	}
 	while ((ft_isalnum(input->input[j + 1]) || input->input[j + 1] == '_'))
@@ -57,29 +58,30 @@ int	find_path(t_input *input, int i, int point)
 	}
 	path = ft_substr(input->input, i + 1, j - i);
 	veriable = ft_getenv(input->env, path);
-	i = convert_input(input, veriable, ft_strlen(path), i);
+	i = convert_shell(input, veriable, ft_strlen(path), i);
 	free(path);
 	return (i);
 }
 
-int	print_dollar(t_input *ipt, char point, int i)
+int	print_dollar(t_shell *ipt, char point, int i)
 {
 	int flag;
 
 	flag = 0;
-	//printf("--%c---%c--\n",point,ipt->input[i] );
-	while (ipt->input[i]  && ipt->input[i++] != '"' && flag == 0)
+	while (ipt->input[i] && ipt->input[i++] != '"' && flag == 0)
 	{
 		if (point == '$')
 			flag = 1;
-		if (ipt->input[i-1] == '$')
+		if (ipt->input[i - 1] == '$')
 		{
-			if (ft_isdigit(ipt->input[i ]))
-				i = find_path(ipt, i-1, 1);
-			else if (ft_isalpha(ipt->input[i ]) || ipt->input[i ] == '_')
-				i = find_path(ipt, i-1, 0);
+			if (ft_isdigit(ipt->input[i]))
+				i = find_path(ipt, i - 1, 1);
+			else if (ft_isalpha(ipt->input[i]) || ipt->input[i] == '_')
+				i = find_path(ipt, i - 1, 0);
 			else if (ipt->input[i] == '?')
-				i = find_path(ipt, i -1, 0);
+				i = find_path(ipt, i - 1, 0);
+			else if (flag == 1 && (ipt->input[i] == 34 || ipt->input[i] == 39))
+				i = find_path(ipt, i - 1, 0);
 		}
 	}
 	if (point == '$')
@@ -87,7 +89,7 @@ int	print_dollar(t_input *ipt, char point, int i)
 	return (i);
 }
 
-int	heredock_dollar(t_input *input, int i)
+int	heredock_dollar(t_shell *input, int i)
 {
 	i += 2;
 	while (input->input[i] == ' ')
@@ -108,7 +110,7 @@ int	heredock_dollar(t_input *input, int i)
 	return (i);
 }
 
-void	dollar_parse(t_input *input)
+void	dollar_expand(t_shell *input)
 {
 	int i;
 
@@ -116,12 +118,9 @@ void	dollar_parse(t_input *input)
 	while (input->input[i])
 	{
 		if (input->input[i] == '"')
-			i = print_dollar(input, input->input[i], i+1);
+			i = print_dollar(input, input->input[i], i + 1);
 		if (input->input[i] == '\'')
-		{
-			i=quotes_skip(input->input,i);
-			i--;
-		}
+			i = quotes_skip(input->input, i, 1);
 		if (input->input[i] == '<' && input->input[i + 1] == '<')
 			i = heredock_dollar(input, i);
 		if (input->input[i] == '$')

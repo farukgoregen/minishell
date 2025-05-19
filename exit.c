@@ -33,5 +33,5 @@ int ft_exit(char **args)
         }
         i++;
     }
-    exit(exit_status & 0xFF);
+    exit(exit_status);
 }
