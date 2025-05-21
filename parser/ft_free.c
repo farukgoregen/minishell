@@ -1,5 +1,5 @@
-#include "libft/libft.h"
-#include "minishell.h"
+#include "../libft/libft.h"
+#include "../minishell.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -52,7 +52,7 @@ void	redirect_free(t_shell *input, int i)
 	if (input->arg[i]->heradock)
 		free(input->arg[i]->heradock);
 	if (input->arg[i]->infile)
-		free(input->arg[i]->infile);
+        free(input->arg[i]->infile);
 	if (input->arg[i]->outfile)
 		free(input->arg[i]->outfile);
 }
@@ -102,4 +102,5 @@ void	ft_executer_free(t_shell *input)
 		}
 	}
 	free(input->arg);
+	free(input);
 }

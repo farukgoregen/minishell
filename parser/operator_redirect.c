@@ -1,5 +1,5 @@
-#include "libft/libft.h"
-#include "minishell.h"
+#include "../libft/libft.h"
+#include "../minishell.h"
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,31 +17,17 @@ int	redirect_control(char *redirect, int flag)
 		fd = open(redirect, O_RDONLY);
 		if (fd == -1)
 			return (1);
-		close(fd);
 	}
-	else if (flag == 1)
+	else if (flag == 1 || flag == 2)
 	{
-		fd = open(redirect, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		if(flag==1)
+			fd = open(redirect, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		else 
+			fd = open(redirect, O_WRONLY | O_CREAT | O_APPEND, 0644);
 		if (fd == -1)
 			return (1);
 		if (access(redirect, W_OK) == -1)
-		{
-			close(fd);
 			return (1);
-		}
-		close(fd);
-	}
-	else if (flag == 2)
-	{
-		fd = open(redirect, O_WRONLY | O_CREAT | O_APPEND, 0644);
-		if (fd == -1)
-			return (1);
-		if (access(redirect, W_OK) == -1)
-		{
-			close(fd);
-			return (1);
-		}
-		close(fd);
 	}
 	return (0);
 }
@@ -133,7 +119,7 @@ char	*redirect_skip(char **redirect, char *str, int *t, int *flag)
 char	*redirect_find(char **redirect, char *str, int *i, int *flag)
 {
 	int j;
-
+	
 	j = *i;
 	if (str[j] == '<' && str[j + 1] == '<')
 	{

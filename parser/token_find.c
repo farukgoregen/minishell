@@ -1,5 +1,5 @@
-#include "libft/libft.h"
-#include "minishell.h"
+#include "../libft/libft.h"
+#include "../minishell.h"
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,7 +26,10 @@ char	*redirect_convert(t_shell *ipt, char *str, int k, int *flag)
 		if (!str)
 			return (NULL);
 		if (*flag != 0)
+		{
+			free(str);
 			return (NULL);
+		}
 	}
 	return (str);
 }
@@ -34,7 +37,7 @@ char	*redirect_convert(t_shell *ipt, char *str, int k, int *flag)
 int	token_find(t_shell *ipt, int i, int j, int k)
 {
 	char *fakestr;
-	char *temp;
+	// char *temp;
 	int flag;
 
 	flag = 0;
@@ -44,9 +47,9 @@ int	token_find(t_shell *ipt, int i, int j, int k)
 	ipt->arg[k] = ft_calloc(1, sizeof(t_cmd));
 	if (!ipt->arg[k])
 		return (0);
-	temp = fakestr;
+	//  temp = fakestr;
 	fakestr = redirect_convert(ipt, fakestr, k, &flag);
-	// if (temp !=fakestr)
+	// if (!fakestr && temp)
 	// 	free(temp);
 	if (flag == 0)
 		arg_convert(ipt, fakestr, k);
@@ -64,7 +67,7 @@ void	token_create(t_shell *ipt, int len, int k,int flag)
 	ipt->arg = malloc(sizeof(t_cmd *) * (ipt->pipe + 2)); // burası +1di
 	if (!ipt->arg)
 		return ;
-	while (ipt->input[++i] && i < len)// len'i koymayınca fazladan 1 kere daha giriyor
+	while (i < len&& ipt->input[++i] )// len'i koymayınca fazladan 1 kere daha giriyor
 	{
 		flag++;
 		if (ipt->input[i] == 34 || ipt->input[i] == 39)

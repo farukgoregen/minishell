@@ -1,6 +1,6 @@
 
-#include "libft/libft.h"
-#include "minishell.h"
+#include "../libft/libft.h"
+#include "../minishell.h"
 #include <readline/history.h>
 #include <readline/readline.h>
 #include <stdio.h>
