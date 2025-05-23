@@ -25,59 +25,59 @@ char	*ft_getenv(char **env, char *name)
 	return (NULL);
 }
 
-char	**ft_setenv2(char **env, char *variable, int e, int j)
+char	**ft_setenv2(char **env, char *variable,int j)
 {
 	int		i;
-	char	*new_var;
+	char	**new_env;
 
 	i = 0;
 	while (env[i])
 	{
 		if (ft_strncmp(env[i], variable, j) == 0 && env[i][j] == '=')
 		{
-			env[i] = ft_strdup(variable);
-			return (env);
+			new_env = copy_env(env, 0);
+			free(new_env[i]);
+			new_env[i] = ft_strdup(variable);
+			ft_free(env);
+			return (new_env);
 		}
 		i++;
 	}
-	if (e == 1)
-	{
-		new_var = ft_substr(variable, 0, j);
-		env[i] = new_var;
-	}
-	else
-	{
-		env[i] = ft_strdup(variable);
-	}
-	env[i + 1] = NULL;
-	return (env);
+	new_env = copy_env(env, 1);
+	new_env[i] = ft_strdup(variable);
+	new_env[i + 1] = NULL;
+	ft_free(env);
+	return (new_env);
 }
 
-char	**ft_setenv(char **env, char *variable, int e)
+char	**ft_setenv(char **env, char *variable)
 {
 	int		j;
 	char	*equal_sign;
-
 	if (!env || !variable)
 		return (env);
 	equal_sign = ft_strchr(variable, '=');
 	if (!equal_sign)
 		return (env);
 	j = equal_sign - variable;
-	return (ft_setenv2(env, variable, e, j));
+	return (ft_setenv2(env, variable,j));
 }
 
 void	ft_free(char **str)
 {
 	int	i;
 
+	if (!str)
+		return ;
 	i = 0;
-	while (str[i] != 0)
+	while (str[i] != NULL)
 	{
 		free(str[i]);
+		str[i] = NULL;
 		i++;
 	}
 	free(str);
+	str = NULL;
 }
 
 char	*pathc(char *cmd, char **envp, int i)

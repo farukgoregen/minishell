@@ -7,6 +7,16 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+void	error_and_allocate(t_shell *pro, int exit_code)
+{
+	ft_executer_free(pro);
+	if (pro->env != pro->new_env)
+		ft_free(pro->new_env);
+	ft_free(pro->env);
+	free(pro);
+	exit(exit_code);
+}
+
 void	ft_pwd(void)
 {
 	char	cwd[1024];
@@ -17,24 +27,20 @@ void	ft_pwd(void)
 		ft_print_error(NULL, "pwd not found", NULL, 1);
 }
 
-void	ft_env(char **env, char **args, t_shell *pro)
+void	ft_env(char **args, t_shell *pro)
 {
 	int	i;
 
 	i = 0;
-	if (args && args[0])
+	if (args[0])
 	{
-		if (ft_strchr(args[0], '=') == NULL)
-		{
-			perror("env:");
-			exit(0);
-		}
-		ft_export(&args[0], pro, 1);
+		ft_print_error(NULL, "env: too many arguments", NULL, 1);
+		error_and_allocate(pro, 1);
 	}
-	while (env[i])
+	while (pro->env[i])
 	{
-		if (ft_strchr(env[i], '='))
-			printf("%s\n", env[i]);
+		if (ft_strchr(pro->env[i], '='))
+			printf("%s\n", pro->env[i]);
 		i++;
 	}
 }
