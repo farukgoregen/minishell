@@ -13,30 +13,27 @@ int		g_signal_exit = 0;
 void	handle_sigint(int sig)
 {
 	(void)sig;
-	if (g_signal_exit == 1){
-		write(1, "\n", 1);
-		g_signal_exit=23;
-		return;
-	}
-	else if (g_signal_exit == 2)
-	{
-		write(1, "\n", 1);
-		exit(130);
-	}
-	else if (g_signal_exit == 0)
+	if (g_signal_exit == 0 || g_signal_exit == 130)
 	{
 		write(1, "\n", 1);
 		rl_on_new_line();
 		rl_replace_line("", 0);
 		rl_redisplay();
 	}
+	else if (g_signal_exit == 2)
+	{
+		write(1, "\n", 1);
+		rl_on_new_line();
+	}
+	g_signal_exit = 130;
 }
 
-char **copy_env(char **env, int b)
+char	**copy_env(char **env, int b)
 {
-	int i = 0;
+	int i;
 	char **copy;
 
+	i = 0;
 	while (env[i])
 		i++;
 	copy = malloc(sizeof(char *) * (i + b + 1));
@@ -58,7 +55,6 @@ char **copy_env(char **env, int b)
 	copy[i] = NULL;
 	return (copy);
 }
-
 
 char	*ft_read(int fd, char *str)
 {
@@ -114,29 +110,23 @@ char	*get_next_line(int fd)
 	}
 	return (beforestr);
 }
-
 void	read_line(t_shell *input, char **env, int code)
 {
+	input->original_stdin = dup(0);
 	input->input = NULL;
 	input->isprint = 0;
 	input->isalpha = 0;
 	input->pipe = 0;
 	input->error = 0;
 	input->operator= 0;
-	// input->dot = 0;
 	input->after_str = 0;
 	input->quotes = 0;
 	input->dollar = 0;
 	input->env = env;
 	input->arg = NULL;
+	input->temp = NULL;
 	input->exit_code = code;
-
-	// input->input = readline("minishell:");
-	// if (!input->input)
-	// {
-	// 	//ft_print_error(NULL, "exit", NULL, 1);
-	// 	exit(0);
-	// }
+	
 	if (isatty(fileno(stdin)))
 		input->input = readline("minishell:");
 	// if (!input->input)
@@ -158,19 +148,21 @@ void	read_line(t_shell *input, char **env, int code)
 	add_history(input->input);
 }
 
-
-int	ft_executer(t_shell *input)
+int	ft_executer(t_shell *input, char ***new_env)
 {
 	int exit;
 	free(input->input);
 	exit = execute_pipe(input, 0);
 	ft_executer_free(input);
+	g_signal_exit = 0;
+	if (input->env != *new_env)
+		*new_env = input->env;
+	free(input);
 	return (exit);
 }
 
 int	ft_error(t_shell *input)
 {
-	
 	if (input->error == 2)
 		write(2, "minishell: open quotes \"\'", 26);
 	else if (input->error == 3)
@@ -178,7 +170,7 @@ int	ft_error(t_shell *input)
 			57);
 	free(input->input);
 	free(input);
-	if (input->error==2 || input->error==3)
+	if (input->error == 2 || input->error == 3)
 		exit (2);
 	exit (0);
 }
@@ -187,30 +179,25 @@ int	main(int ac, char **av, char **env)
 {
 	t_shell *input;
 	int exit_code;
-	char 	**new_env;
+	char **new_env;
 
 	(void)av;
 	(void)ac;
 	signal(SIGINT, handle_sigint);
-	signal(SIGQUIT,SIG_IGN);
+	signal(SIGQUIT, SIG_IGN);
+	new_env = copy_env(env, 0);
 	exit_code = 0;
-	new_env = copy_env(env,0);
 	while (1)
 	{
+		g_signal_exit = 0;
 		input = malloc(sizeof(t_shell));
 		read_line(input, new_env, exit_code);
 		ft_parser(input);
 		if (input->error == 0)
-		{
-			exit_code = ft_executer(input);
-			if (input->env != new_env)
-			{
-				// ft_free(new_env);
-				new_env = input->env;
-			}
-			free(input);
-		}
+			exit_code = ft_executer(input, &new_env);
 		else
-			exit_code=ft_error(input);
+			exit_code = ft_error(input);
+		if (g_signal_exit != 0)
+			exit_code = g_signal_exit;
 	}
 }

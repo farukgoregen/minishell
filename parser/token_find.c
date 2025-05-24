@@ -9,13 +9,12 @@
 char	*redirect_convert(t_shell *ipt, char *str, int k, int *flag)
 {
 	int i;
-
 	i = -1;
 	while (str[++i])
 	{
 		ipt->temp = str;
 		if (str[i] == 34 || str[i] == 39)
-			i = quotes_skip(str, i, 0, 0);
+			i = quotes_skip(str, i, 1, 0);
 		if (str[i] == '<' && str[i + 1] == '<')
 			str = redirect_find(&ipt->arg[k]->heradock, str, &i, flag);
 		else if (str[i] == '<')
@@ -35,11 +34,11 @@ char	*redirect_convert(t_shell *ipt, char *str, int k, int *flag)
 	return (str);
 }
 
-int	token_find(t_shell *ipt, int i, int j, int k)
+int	token_handle_parsing(t_shell *ipt, int i, int j, int k)
 {
 	char *fakestr;
 	int flag;
-	
+
 	flag = 0;
 	if (ipt->input[i + 1] == '\0')
 		i++;
@@ -49,12 +48,12 @@ int	token_find(t_shell *ipt, int i, int j, int k)
 		return (0);
 	fakestr = redirect_convert(ipt, fakestr, k, &flag);
 	if (flag == 0)
-		arg_convert(ipt, fakestr, k);
+		token_create(ipt, fakestr, k);
 	free(fakestr);
 	return (i);
 }
 
-void	token_create(t_shell *ipt, int len, int k, int flag)
+void	token_parse(t_shell *ipt, int len, int k, int flag)
 {
 	int i;
 	int j;
@@ -73,7 +72,7 @@ void	token_create(t_shell *ipt, int len, int k, int flag)
 		if (ipt->input[i] == '\0' || ipt->input[i] == '|' || ipt->input[i
 			+ 1] == '\0')
 		{
-			i = token_find(ipt, i, j, k);
+			i = token_handle_parsing(ipt, i, j, k);
 			k++;
 			j = i + 1;
 		}
